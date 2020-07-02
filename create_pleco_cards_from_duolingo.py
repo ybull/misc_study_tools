@@ -93,17 +93,22 @@ def sort_and_deduplicate_words(words: list) -> list:
 
     :param words: the list of Chinese words from Duolingo
     :return: a modified list of the words
+
+    >>> sort_and_deduplicate_words(['这','这儿','这里','认识', '这', '说'])
+    ['认识', '说', '这', '这儿', '这里']
+    >>> sort_and_deduplicate_words(['中国', '不客气', '不客气'])
+    ['不客气', '中国']
     """
     return sorted(set(words))
 
 
-def add_missing_isolated_characters(words: list) -> list:
+def get_missing_single_characters(words: list) -> list:
     """Some characters I'm supposed to learn are only listed as part of a
-    multi-character word, and not included in the list as an individual
-    character.
+    multi-character word or phrase, not included in Duolingo's word list
+    individually.
 
-    It should be worth adding those as separate items to my Pleco flash cards,
-    to aid recognition and to help understand the derivations of compound words.
+    I wish to add those as separate items to my Pleco flash cards, to aid
+    recognition and to help understand the derivations of compound words.
 
     For example, Duolingo includes 电话 = telephone, but so far has not taught me
         电 = electricity; electric; lightning
@@ -113,7 +118,14 @@ def add_missing_isolated_characters(words: list) -> list:
     of only 311 words!
 
     :param words: The current list of words.
-    :return: An expanded list of words.
+    :return: list of ONLY the characters to add.
+
+    >>> get_missing_single_characters(['这','这儿','这里','认识','说'])
+    ['儿', '认', '识', '里']
+    >>> get_missing_single_characters(['天', '明天', '明'])
+    []
+    >>> get_missing_single_characters(['不', '一', '一点儿','不客气'])
+    ['儿', '客', '气', '点']
     """
     # split words list into single-character words vs multi-character:
     singles = [w for w in words if len(w) == 1]
@@ -125,11 +137,14 @@ def add_missing_isolated_characters(words: list) -> list:
     uniques = set(multis)
 
     new_chars = sorted([c for c in uniques if c not in singles])
-    return words + new_chars
+    return new_chars
 
 
-if __name__ == '__main__':
+def create_pleco_import_file(outfilename=None):
+    """This is the main function. It generates a text file based on the
+    current date, unless one is given.
 
+    :param outfilename: default will be 'pleco_duolingo_2020-##-##.txt"""
     entries = fetch_duolingo_words_page()
     print('Results as listed at Duolingo:')
     print(entries)
@@ -137,23 +152,34 @@ if __name__ == '__main__':
     count_orig = len(entries)
     entries = sort_and_deduplicate_words(entries)
     count_dedup = len(entries)
-    entries = add_missing_isolated_characters(entries)
-    count_expanded = len(entries)
+    new_entries = get_missing_single_characters(entries)
+    count_expanded = len(new_entries)
     # Note, I'm intentionally NOT re-sorting the full list after expanding,
     # so that I can easily see in the text file which characters were added
     # this way.
 
     today = datetime.datetime.now().isoformat()[:10]
-    outfilename = 'pleco_duolingo_{}.txt'.format(today)
+    if outfilename is None:
+        outfilename = 'pleco_duolingo_{}.txt'.format(today)
     with open(outfilename, 'w', encoding='utf-8') as outfile:
         print('exporting to file: {}'.format(outfilename))
 
-        # Embed a Pleco 'CardCategory' by date
+        # Embed a Pleco Card Category by date
         print('//Duo{}'.format(today), file=outfile)
         for item in entries:
+            print(item, file=outfile)
+            print(item)  # to console
+        # Embed another Card Category for the supplementary characters:
+        print('//Duo{}+'.format(today), file=outfile)
+        for item in new_entries:
             print(item, file=outfile)
             print(item)  # to console
 
     print("Word counts: \n")
     print("Duolingo: {} \tDedup'd: {} \tExpanded: {}".format(
             count_orig, count_dedup, count_expanded))
+
+
+if __name__ == '__main__':
+
+    create_pleco_import_file()
