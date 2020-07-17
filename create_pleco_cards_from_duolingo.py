@@ -180,6 +180,13 @@ def create_pleco_import_file(outfilename=None):
             count_orig, count_dedup, count_expanded))
 
 
+
 if __name__ == '__main__':
 
     create_pleco_import_file()
+
+    # TODO: This is fine for now, but would be better to automate this and
+    #  have it change the Card Category to include 'NEW'.
+    print('\nRemember if you want to create a usable diff from a previous date, ')
+    print('the command to use looks like this:')
+    print('comm -13 old_pleco_filename new_pleco_filename')
