@@ -75,7 +75,7 @@ def fetch_duolingo_words_page() -> list:
     time.sleep(3)
 
     # Get all the Chinese characters/words in the table:
-    xpath_q = "//span[contains(@class, '_3_ODH')]"
+    xpath_q = "//span[contains(@class, '_3hBUY')]"
     elements = browser.find_elements_by_xpath(xpath_q)
     results = [e.text for e in elements]  # extract the text nodes in the spans
     browser.close()
