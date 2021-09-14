@@ -180,7 +180,6 @@ def create_pleco_import_file(outfilename=None):
             count_orig, count_dedup, count_expanded))
 
 
-
 if __name__ == '__main__':
 
     create_pleco_import_file()
